@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Υπολογιστής Υδατικού Αποτυπώματος</title>
+<style>
+  :root {
+    --primary: #0077b6;
+    --secondary: #00b4d8;
+    --accent: #caf0f8;
+    --bg: #f0f8ff;
+    --text: #333333;
+    --card: #ffffff;
+    --success: #2a9d8f;
+    --warning: #e9c46a;
+    --danger: #e76f51;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    background-color: var(--primary);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .logo-svg {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .screen {
+    display: none;
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,119,182,0.15);
+    padding: 2.5rem;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .screen.active {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  button {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+  }
+
+  button:hover:not(:disabled) {
+    background-color: var(--secondary);
+  }
+
+  button:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+
+  .progress-container {
+    margin-bottom: 2rem;
+  }
+
+  #progress-text {
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
+
+  .progress-bar-bg {
+    background-color: #e0e0e0;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  #progress-bar-fill {
+    background-color: var(--secondary);
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  #question-text {
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+    min-height: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.4;
+  }
+
+  .options-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+  }
+
+  .slider-value-display {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 2rem;
+    min-height: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--secondary);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    margin: 10px 0;
+  }
+
+  input[type=range]:focus {
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 12px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border: 4px solid white;
+    transition: transform 0.1s;
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    background: var(--secondary);
+  }
+
+  input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 12px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  input[type=range]::-moz-range-thumb {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border: 4px solid white;
+    transition: transform 0.1s;
+  }
+
+  input[type=range]::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    background: var(--secondary);
+  }
+
+  .slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    margin-top: 4px;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .slider-ticks span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 0;
+    white-space: nowrap;
+  }
+
+  .slider-ticks span::before {
+    content: '|';
+    color: #aaa;
+    font-size: 1.2rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+  }
+
+  .score-display {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 1.5rem 0;
+  }
+
+  #category-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #category-desc {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  .tips-container {
+    text-align: left;
+    background-color: var(--bg);
+    padding: 1.8rem;
+    border-radius: 8px;
+    margin-bottom: 2.5rem;
+    border-left: 4px solid var(--primary);
+  }
+
+  .tips-container h4 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .tips-container ul {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+
+  .tips-container li {
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+    font-size: 1.05rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    background-color: #e0f0ff;
+  }
+
+  .bottom-splash {
+    width: 100%;
+    margin-top: auto;
+    line-height: 0;
+    pointer-events: none;
+    overflow: hidden;
+    position: relative;
+    height: 120px;
+    background: linear-gradient(to bottom, transparent, var(--accent));
+  }
+
+  .river-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background-repeat: repeat-x;
+    background-position: 0 bottom;
+    transform-origin: center bottom;
+  }
+
+  .wave1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'%3E%3Cpath fill='%2300b4d8' opacity='0.4' d='M0,100 C400,150 400,50 800,100 C1200,150 1200,50 1600,100 L1600,200 L0,200 Z'/%3E%3C/svg%3E");
+    animation: flow 20s linear infinite;
+    z-index: 1;
+    opacity: 0.5;
+    height: 100px;
+  }
+
+  .wave2 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'%3E%3Cpath fill='%230077b6' opacity='0.3' d='M0,100 C400,50 400,150 800,100 C1200,50 1200,150 1600,100 L1600,200 L0,200 Z'/%3E%3C/svg%3E");
+    animation: flow 15s linear infinite reverse;
+    z-index: 2;
+    opacity: 0.6;
+    height: 80px;
+  }
+
+  .wave3 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'%3E%3Cpath fill='%2300b4d8' d='M0,100 C400,130 400,70 800,100 C1200,130 1200,70 1600,100 L1600,200 L0,200 Z'/%3E%3C/svg%3E");
+    animation: flow 10s linear infinite;
+    z-index: 3;
+    height: 60px;
+  }
+
+  @keyframes flow {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 768px) {
+    #question-text {
+      font-size: 1.2rem;
+      min-height: auto;
+    }
+    .screen {
+      padding: 1.5rem;
+    }
+    .slider-value-display {
+      font-size: 1.1rem;
+      min-height: 5em;
+      padding: 0.8rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <svg class="logo-svg" width="40" height="40" viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="dropGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#00b4d8;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#0077b6;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <path d="M100 20 C100 20 40 120 40 180 A60 60 0 1 0 160 180 C160 120 100 20 100 20Z" fill="url(#dropGradient)" />
+      <path d="M130 150 C130 150 115 175 115 195 A15 15 0 1 0 145 195 C145 175 130 150 130 150Z" fill="#caf0f8" opacity="0.7" />
+    </svg>
+    <h1>Υπολογιστής Υδατικού Αποτυπώματος</h1>
+  </header>
+  
+  <main>
+    <div id="intro-screen" class="screen active">
+      <div style="margin-bottom: 1.5rem;">
+        <svg width="120" height="150" viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 20 C100 20 40 120 40 180 A60 60 0 1 0 160 180 C160 120 100 20 100 20Z" fill="url(#dropGradient)" />
+          <path d="M130 150 C130 150 115 175 115 195 A15 15 0 1 0 145 195 C145 175 130 150 130 150Z" fill="#caf0f8" opacity="0.7" />
+        </svg>
+      </div>
+      <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 1rem;">Ανακαλύψτε το Υδατικό σας Αποτύπωμα</h2>
+      <p style="font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem; color: #555;">
+        Κάντε αυτό το κουίζ 20 ερωτήσεων για να μάθετε πώς οι καθημερινές σας συνήθειες επηρεάζουν τον πολυτιμότερο πόρο μας. 
+        Δείτε πού βρίσκεστε και πώς μπορείτε να κάνετε τη διαφορά.
+      </p>
+      <button onclick="startQuiz()" style="font-size: 1.2rem; padding: 1rem 2rem;">Έναρξη Κουίζ</button>
+    </div>
+    
+    <div id="quiz-screen" class="screen">
+      <div class="progress-container">
+        <div id="progress-text">Ερώτηση 1 από 20</div>
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill"></div>
+        </div>
+      </div>
+      
+      <div id="question-container">
+        <h2 id="question-text"></h2>
+        <div class="options-container" id="options-container"></div>
+      </div>
+      
+      <div class="navigation-buttons">
+        <button id="prev-btn" onclick="prevQuestion()" disabled>Πίσω</button>
+        <button id="next-btn" onclick="nextQuestion()" disabled>Επόμενο</button>
+      </div>
+    </div>
+    
+    <div id="result-screen" class="screen">
+      <h2 style="color: var(--primary); margin-top: 0;">Τα Αποτελέσματά σας</h2>
+      <div class="score-display">
+        <span id="total-score">0</span><span style="font-size: 1.5rem; color: #888;"> / 200</span>
+      </div>
+      <h3 id="category-title"></h3>
+      <p id="category-desc"></p>
+      
+      <div class="tips-container">
+        <h4>Συμβουλές για εσάς:</h4>
+        <ul id="tips-list"></ul>
+      </div>
+      
+      <button onclick="restartQuiz()" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Κάντε το Κουίζ Ξανά</button>
+    </div>
+  </main>
+
+  <div class="bottom-splash">
+    <div class="river-wave wave1"></div>
+    <div class="river-wave wave2"></div>
+    <div class="river-wave wave3"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Υπολογιστής Υδατικού Αποτυπώματος. Κάθε σταγόνα μετράει.</p>
+  </footer>
+
+  <script>
+    const questionsData = [
+      ["Όταν κάνετε ντους, πόση ώρα μένετε συνήθως κάτω από το νερό;", "Ποτέ πάνω από 5 λεπτά", "Συχνά μεταξύ 6 και 10 λεπτών", "Πολύ συχνά πάνω από 10 λεπτά"],
+      ["Πόσο συχνά κλείνετε τη βρύση όταν πλένετε τα δόντια σας;", "Πολύ συχνά την κλείνω", "Συχνά την κλείνω", "Ποτέ δεν την κλείνω"],
+      ["Όταν πλένετε πιάτα στο χέρι, πόσο συχνά κρατάτε τη βρύση κλειστή και χρησιμοποιείτε γεμάτο νεροχύτη/λεκάνη;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Όταν πλένετε το αυτοκίνητό σας στο σπίτι, πόσο συχνά χρησιμοποιείτε κουβά ή μέθοδο εξοικονόμησης νερού αντί για λάστιχο;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά ελέγχετε το σπίτι σας για διαρροές (τουαλέτα, βρύσες, μετρητής);", "Πολύ συχνά (τουλάχιστον κάθε 3 μήνες)", "Συχνά (περίπου μία φορά το χρόνο)", "Ποτέ ή σχεδόν ποτέ"],
+      ["Πόσο συχνά επιλέγετε ή συντηρείτε συστήματα τουαλέτας εξοικονόμησης νερού (διπλής ροής, χαμηλής ροής) στο σπίτι σας;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά βάζετε πλυντήριο ρούχων μόνο όταν είναι γεμάτο και με προγράμματα eco/εξοικονόμησης νερού;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά ποτίζετε τον κήπο ή τα φυτά σας σε ώρες εξοικονόμησης νερού (νωρίς το πρωί/αργά το βράδυ) ή με στάγδην άρδευση;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά πίνετε εμφιαλωμένο νερό αντί για ασφαλές νερό βρύσης ή φιλτραρισμένο;", "Ποτέ (σχεδόν πάντα βρύσης ή φιλτραρισμένο)", "Συχνά (περίπου τις μισές φορές)", "Πολύ συχνά (σχεδόν πάντα εμφιαλωμένο)"],
+      ["Πόσο συχνά αναλαμβάνετε δράση όταν βλέπετε να σπαταλάται νερό σε δημόσιους χώρους (π.χ. ανοιχτή βρύση, σπασμένος ποτιστήρας);", "Πολύ συχνά (το αναφέρω ή προσπαθώ να το κλείσω)", "Συχνά (μερικές φορές αντιδρώ)", "Ποτέ"],
+      ["Πόσο συχνά επαναχρησιμοποιείτε νερό από το μαγείρεμα ή το πλύσιμο λαχανικών (για φυτά, καθάρισμα κ.λπ.);", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά ενημερώνεστε για την τοπική λειψυδρία, την ξηρασία ή τα νέα για την πολιτική υδάτων;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Όταν αγοράζετε συσκευές (πλυντήριο πιάτων, ρούχων), πόσο συχνά επιλέγετε ενεργά μοντέλα υψηλής απόδοσης νερού;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Όταν είστε σε διακοπές (ξενοδοχείο, ενοικιαζόμενο), πόσο συχνά διατηρείτε τις ίδιες συνήθειες εξοικονόμησης νερού που έχετε στο σπίτι;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Κατά τη διάρκεια ξηρασίας ή απαγορεύσεων ποτίσματος, πόσο συχνά μειώνετε σημαντικά το πότισμα ή αφήνετε το γκαζόν/κήπο σας να γίνει λιγότερο πράσινο;", "Πολύ συχνά", "Συχνά", "Ποτέ (ποτίζω κανονικά)"],
+      ["Πόσο συχνά τρώτε τρόφιμα με μεγάλη κατανάλωση νερού, όπως το βοδινό κρέας, σε σύγκριση με φυτικές επιλογές;", "Ποτέ ή πολύ σπάνια", "Συχνά (μερικές φορές κάθε εβδομάδα)", "Πολύ συχνά (σχεδόν κάθε μέρα)"],
+      ["Πόσο συχνά σκέφτεστε το υδατικό αποτύπωμα όταν αγοράζετε ρούχα και προσπαθείτε να αγοράζετε λιγότερα, πιο ανθεκτικά είδη;", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά επαναχρησιμοποιείτε το γκρίζο νερό στο σπίτι (για παράδειγμα, νερό που μαζεύετε μέχρι να ζεσταθεί το ντους, νερό από το ξέπλυμα λαχανικών);", "Πολύ συχνά", "Συχνά", "Ποτέ"],
+      ["Πόσο συχνά κλείνετε τη βρύση όταν σαπουνίζετε τα χέρια σας;", "Πολύ συχνά", "Συχνά", "Ποτέ (η βρύση τρέχει συνέχεια)"],
+      ["Πόσο συχνά αντιμετωπίζετε το νερό ως έναν σπάνιο, πολύτιμο πόρο στις καθημερινές σας αποφάσεις;", "Πολύ συχνά", "Συχνά", "Ποτέ"]
+    ];
+
+    const scores = [10, 5, 0];
+    let currentIndex = 0;
+    let answers = new Array(20).fill(null);
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function startQuiz() {
+      currentIndex = 0;
+      answers.fill(null);
+      showScreen('quiz-screen');
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIndex < 19) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function restartQuiz() {
+      showScreen('intro-screen');
+    }
+
+    function renderQuestion() {
+      const qData = questionsData[currentIndex];
+      
+      document.getElementById('progress-text').textContent = `Ερώτηση ${currentIndex + 1} από 20`;
+      document.getElementById('progress-bar-fill').style.width = `${((currentIndex + 1) / 20) * 100}%`;
+      document.getElementById('question-text').textContent = qData[0];
+      
+      const optsContainer = document.getElementById('options-container');
+      optsContainer.innerHTML = '';
+      
+      // Default to middle option if not answered yet
+      let currentValue = 1; 
+      if (answers[currentIndex] !== null) {
+        currentValue = scores.indexOf(answers[currentIndex]);
+      } else {
+        answers[currentIndex] = scores[1]; // Set default answer to middle
+      }
+
+      const valueDisplay = document.createElement('div');
+      valueDisplay.className = 'slider-value-display';
+      valueDisplay.textContent = qData[currentValue + 1];
+
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = '0';
+      slider.max = '2';
+      slider.step = '1';
+      slider.value = currentValue;
+
+      slider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        valueDisplay.textContent = qData[val + 1];
+        answers[currentIndex] = scores[val];
+      });
+
+      const isFirstNever = qData[1].toLowerCase().startsWith('ποτέ');
+      const tickLabels = isFirstNever 
+        ? ['Ποτέ', 'Συχνά', 'Πολύ Συχνά'] 
+        : ['Πολύ Συχνά', 'Συχνά', 'Ποτέ'];
+
+      const ticks = document.createElement('div');
+      ticks.className = 'slider-ticks';
+      const tick1 = document.createElement('span'); tick1.textContent = tickLabels[0];
+      const tick2 = document.createElement('span'); tick2.textContent = tickLabels[1];
+      const tick3 = document.createElement('span'); tick3.textContent = tickLabels[2];
+      ticks.appendChild(tick1);
+      ticks.appendChild(tick2);
+      ticks.appendChild(tick3);
+
+      optsContainer.appendChild(valueDisplay);
+      optsContainer.appendChild(slider);
+      optsContainer.appendChild(ticks);
+      
+      document.getElementById('prev-btn').disabled = currentIndex === 0;
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = false; // Always enabled since we default to middle
+      nextBtn.textContent = currentIndex === 19 ? 'Δείτε τα Αποτελέσματα' : 'Επόμενο';
+    }
+
+    function showResults() {
+      showScreen('result-screen');
+      const totalScore = answers.reduce((sum, val) => sum + (val || 0), 0);
+      
+      let currentScore = 0;
+      const scoreEl = document.getElementById('total-score');
+      const interval = setInterval(() => {
+        currentScore += Math.ceil(totalScore / 20) || 1;
+        if (currentScore >= totalScore) {
+          currentScore = totalScore;
+          clearInterval(interval);
+        }
+        scoreEl.textContent = currentScore;
+      }, 30);
+      
+      const titleEl = document.getElementById('category-title');
+      const descEl = document.getElementById('category-desc');
+      let tips = [];
+      
+      if (totalScore >= 150) {
+        titleEl.textContent = "Φύλακας του Νερού";
+        titleEl.style.color = "var(--success)";
+        descEl.textContent = "Φύλακας του Νερού – Το υδατικό σας αποτύπωμα και οι συνήθειές σας είναι πολύ υπεύθυνες.";
+        tips = [
+          "Συνεχίστε την εξαιρετική δουλειά! Είστε πρότυπο για την εξοικονόμηση νερού.",
+          "Μοιραστείτε τις συνήθειές σας με φίλους και οικογένεια για να τους εμπνεύσετε.",
+          "Σκεφτείτε να συμμετάσχετε σε τοπικά προγράμματα προστασίας των υδάτων."
+        ];
+      } else if (totalScore >= 80) {
+        titleEl.textContent = "Ευαισθητοποιημένος";
+        titleEl.style.color = "var(--warning)";
+        descEl.textContent = "Ευαισθητοποιημένος – Είστε στο σωστό δρόμο αλλά έχετε περιθώρια βελτίωσης.";
+        tips = [
+          "Προσπαθήστε να μειώσετε το ντους σας κατά 2 λεπτά για να εξοικονομήσετε πολλά λίτρα νερού καθημερινά.",
+          "Κάντε συνήθεια να κλείνετε τη βρύση όταν πλένετε τα δόντια σας ή σαπουνίζετε τα χέρια σας.",
+          "Ελέγξτε το σπίτι σας για κρυφές διαρροές, ειδικά σε τουαλέτες και βρύσες."
+        ];
+      } else {
+        titleEl.textContent = "Υψηλό Υδατικό Αποτύπωμα";
+        titleEl.style.color = "var(--danger)";
+        descEl.textContent = "Υψηλό Υδατικό Αποτύπωμα – Οι συνήθειές σας ασκούν μεγάλη πίεση στους υδάτινους πόρους. Μικρές αλλαγές μπορούν να κάνουν μεγάλη διαφορά.";
+        tips = [
+          "Ξεκινήστε με απλές αλλαγές: κλείστε τη βρύση όταν πλένετε τα δόντια σας ή τα πιάτα.",
+          "Προσπαθήστε να κάνετε πιο σύντομα ντους και αποφύγετε να γεμίζετε τη μπανιέρα.",
+          "Βάζετε πλυντήριο ρούχων και πιάτων μόνο όταν είναι εντελώς γεμάτα."
+        ];
+      }
+      
+      document.getElementById('tips-list').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+    }
+  </script>
+</body>
+</html>
